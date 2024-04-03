@@ -6,6 +6,9 @@ from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
 from src.utils.LoadFile import LoadFile
 from src.FightGenerator import FightGenerator
+from src.ACModel import model
+from src.PlayerInformation import PlayerInformation
+from src.FightInformation import FightInformation
 from src.utils.Logger import log, logp, compileLogs
 
 
@@ -47,16 +50,51 @@ class CharterWorker:
             # matchId: str = "TEST"
             # filePath: str = "./download/sample-notCheating.csv"
             log("Loaded file:", filePath)
-            charterData: list = []
-            log("Starting Report Generation...")
-            chartGenerator: ChartGenerator = ChartGenerator(filePath, matchId)
-            chartGenerator.startReportGeneration()
-            charterData.append(chartGenerator.getReportData())
-            log("Finished Report Generation.")
+
+            log("Fetching player information...")
+            playerInformation: PlayerInformation = PlayerInformation()
+            playerInformation.loadPlayers()
+            log("Successfully fetched player information.")
+            
+            allFightsData: list = []
+
+            log("Starting Fight Analysis...")
+
+            fightGenerator: FightGenerator = FightGenerator(filePath)
+            for fightDf in fightGenerator.getFights():
+                # get classification from model
+                modelLabel: bool = model.predict(fightDf)
+                
+                # not processing non cheating players
+                if modelLabel == False:
+                    continue
+
+                # update player information
+                playerSteamId: int = fightGenerator.getFightPlayerId(fightDf)
+                targetSteamId: int = fightGenerator.getFightTargetId(fightDf)
+
+                playerInformation.increasePlayerCheatingCount(playerSteamId)
+                
+                # get fightChart data
+                fightData: list[list] = fightGenerator.getFightData(fightDf)
+
+                fightInformation: FightInformation = FightInformation(
+                    match_id= matchId,
+                    playerSteamId= playerSteamId,
+                    targetSteamId= targetSteamId,
+                    playerName= playerInformation.getPlayerName(playerSteamId),
+                    targetName= playerInformation.getPlayerName(targetSteamId),
+                    isCheating= modelLabel,
+                    data= fightData
+                )
+
+                allFightsData.append(fightInformation)
+            
+            log("Finished Fight Analysis.")
             self.channel.basic_publish(
                 exchange= "upload_exchange", 
                 routing_key="to_uploader", 
-                body= json.dumps(charterData)
+                body= json.dumps(allFightsData)
             )
             log("Sent Data to RabbitMQ.")
         except Exception:

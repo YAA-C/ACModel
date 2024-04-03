@@ -6,3 +6,6 @@ class ACModel:
 
     def predict(self) -> bool:
         return True
+
+
+model: ACModel = ACModel()

@@ -2,21 +2,29 @@ import pandas as pd
 
 
 class FightGenerator:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, filePath: str) -> None:
+        self.df: pd.DataFrame = pd.DataFrame(filePath)
 
 
-    def fights(self, df: pd.DataFrame):
+    def getFights(self):
         indexes: list = [-1]
-        indexes.extend(df[df.isnull().all(axis=1)].index.to_list())
+        indexes.extend(self.df[self.df.isnull().all(axis=1)].index.to_list())
         
         for i in range(1, len(indexes)):
             prevRowIndex: int = int(indexes[i - 1] + 1)
             curRowIndex: int = int(indexes[i])
-            curDf: pd.DataFrame = df.iloc[prevRowIndex: curRowIndex, :].copy()
+            curDf: pd.DataFrame = self.df.iloc[prevRowIndex: curRowIndex, :].copy()
             curDf.reset_index(inplace = True)
             yield curDf
 
+
+    def getFightPlayerId(self, df: pd.DataFrame) -> int:
+        return int(df["playerId"].iloc[0])
+
+
+    def getFightTargetId(self, df: pd.DataFrame) -> int:
+        return int(df["targetId"].iloc[0])
+    
 
     def getFightData(self, df: pd.DataFrame) -> list[list]:
         x = df["X"]
