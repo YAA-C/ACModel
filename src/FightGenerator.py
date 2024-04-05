@@ -1,10 +1,11 @@
 import pandas as pd
+import numpy as np
 
 
 class FightGenerator:
     def __init__(self, filePath: str) -> None:
-        self.df: pd.DataFrame = pd.DataFrame(filePath)
-
+        self.df: pd.DataFrame = pd.read_csv(filePath)
+    
 
     def getFights(self):
         indexes: list = [-1]
@@ -14,7 +15,10 @@ class FightGenerator:
             prevRowIndex: int = int(indexes[i - 1] + 1)
             curRowIndex: int = int(indexes[i])
             curDf: pd.DataFrame = self.df.iloc[prevRowIndex: curRowIndex, :].copy()
-            curDf.reset_index(inplace = True)
+            curDf.reset_index(inplace = True)            
+            curDf["playerId"] = curDf["playerId"].astype(np.int64)
+            curDf["targetId"] = curDf["targetId"].astype(np.int64)
+
             yield curDf
 
 
@@ -31,6 +35,6 @@ class FightGenerator:
         y = df["Y"]
         targetX = df["targetX"]
         targetY = df["targetY"]
-        isHurt = df["targetId"]
+        isHurt = df["isHurt"]
         data = [x for x in zip(x, y, targetX, targetY, isHurt)]
         return data

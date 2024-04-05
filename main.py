@@ -7,7 +7,6 @@ from src.utils.LoadFile import LoadFile
 from src.FightGenerator import FightGenerator
 from src.ACModel import model
 from src.PlayerInformation import PlayerInformation
-from src.FightInformation import FightInformation
 from src.utils.Logger import log, logp, compileLogs
 
 
@@ -67,13 +66,13 @@ class CharterWorker:
             # loadFile: LoadFile = LoadFile(workObject["url"])
             # matchId: str = str(workObject["match_id"])
             # filePath: str = loadFile.startLoading()
-            matchId: str = "TEST"
-            filePath: str = "./download/sample-notCheating.csv"
+            matchId: str = "660daf2f15e62d9d25cbdde8"
+            filePath: str = "./download/testing-large-unclasssified.csv"
             log("Loaded file:", filePath)
 
             log("Fetching player information...")
             playerInformation: PlayerInformation = PlayerInformation()
-            playerInformation.loadPlayers()
+            playerInformation.loadPlayers(filePath)
             log("Successfully fetched player information.")
             
             allFightsData: list = []
@@ -98,15 +97,15 @@ class CharterWorker:
                 # get fightChart data
                 fightData: list[list] = fightGenerator.getFightData(fightDf)
 
-                fightInformation: FightInformation = FightInformation(
-                    match_id= matchId,
-                    playerSteamId= playerSteamId,
-                    targetSteamId= targetSteamId,
-                    playerName= playerInformation.getPlayerName(playerSteamId),
-                    targetName= playerInformation.getPlayerName(targetSteamId),
-                    isCheating= modelLabel,
-                    data= fightData
-                )
+                fightInformation = {
+                    "match_id": matchId,
+                    "playerSteamId": playerSteamId,
+                    "targetSteamId": targetSteamId,
+                    "isCheating": playerInformation.getPlayerName(playerSteamId),
+                    "playerName": playerInformation.getPlayerName(targetSteamId),
+                    "targetName": modelLabel,
+                    "data": fightData
+                }
 
                 allFightsData.append(fightInformation)
             
@@ -115,6 +114,7 @@ class CharterWorker:
             uploadJSON: str = self.makeUploadJSON(matchId, allPlayersData, allFightsData)
 
             log("Finished Fight Analysis.")
+            print(uploadJSON)
             self.channel.basic_publish(
                 exchange= "upload_exchange", 
                 routing_key="to_uploader", 
