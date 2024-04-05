@@ -62,12 +62,12 @@ class CharterWorker:
     def handleData(self, channel: BlockingChannel, method: Basic.Deliver, body: bytes) -> None:
         log("Job Received.")
         try:
-            # workObject: dict = json.loads(str(body, encoding= "utf-8"))
-            # loadFile: LoadFile = LoadFile(workObject["url"])
-            # matchId: str = str(workObject["match_id"])
-            # filePath: str = loadFile.startLoading()
-            matchId: str = "660daf2f15e62d9d25cbdde8"
-            filePath: str = "./download/testing-large-unclasssified.csv"
+            workObject: dict = json.loads(str(body, encoding= "utf-8"))
+            loadFile: LoadFile = LoadFile(workObject["url"])
+            matchId: str = str(workObject["match_id"])
+            filePath: str = loadFile.startLoading()
+            # matchId: str = "660daf2f15e62d9d25cbdde8"
+            # filePath: str = "./download/testing-large-unclasssified.csv"
             log("Loaded file:", filePath)
 
             log("Fetching player information...")
@@ -113,8 +113,7 @@ class CharterWorker:
             
             uploadJSON: str = self.makeUploadJSON(matchId, allPlayersData, allFightsData)
 
-            log("Finished Fight Analysis.")
-            print(uploadJSON)
+            log("Finished Fight Analysis.")    
             self.channel.basic_publish(
                 exchange= "upload_exchange", 
                 routing_key="to_uploader", 

@@ -15,11 +15,9 @@ class PlayerInformation:
 
         attackerPlayerId: list = notNullDf["playerId"].unique().tolist()
         attackerPlayerId = sorted(attackerPlayerId)
-        print(attackerPlayerId,notNullDf["playerId"])
 
         for playerSteamId in attackerPlayerId:
             tmp: pd.DataFrame = df.loc[df["playerId"] == playerSteamId]
-            print(playerSteamId, tmp)
             self.addPlayer(playerSteamId, tmp.iloc[0, 2])
         
         defenderPlayerId = notNullDf["targetId"].unique().tolist()
