@@ -8,7 +8,7 @@ class LoadFile:
     def __init__(self, url: str) -> None:
         self.url = url
         urlPath = urlsplit(url).path
-        fileName: str = os.path.basename(urlPath)
+        fileName: str = os.path.basename(urlPath) + ".csv"
         self.targetFile: str = os.path.join(os.getcwd(), 'download', fileName)
         self.blockSize: int = 1024
     
