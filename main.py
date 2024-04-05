@@ -101,9 +101,9 @@ class CharterWorker:
                     "match_id": matchId,
                     "playerSteamId": playerSteamId,
                     "targetSteamId": targetSteamId,
-                    "isCheating": playerInformation.getPlayerName(playerSteamId),
-                    "playerName": playerInformation.getPlayerName(targetSteamId),
-                    "targetName": modelLabel,
+                    "isCheating": modelLabel,
+                    "playerName": playerInformation.getPlayerName(playerSteamId),
+                    "targetName": playerInformation.getPlayerName(targetSteamId),
                     "data": fightData
                 }
 
@@ -132,7 +132,7 @@ class CharterWorker:
     def work(self) -> None:
         self.setupRabbit()
         self.channel.basic_consume(
-            queue= "to_charter", 
+            queue= "to_model", 
             on_message_callback= lambda channel, method, _, body: self.handleData(channel, method, body)
         )
         log("Listening on:", self.queueName)
