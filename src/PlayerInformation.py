@@ -10,11 +10,11 @@ class PlayerInformation:
         self.allPlayers = sorted(self.allPlayers)
 
         for playerSteamId in self.allPlayers:
-            tmp: pd.DataFrame = df.loc[df['steamid'] == playerSteamId]
-            self.addplayer(playerSteamId, tmp.iloc[0, 2])
+            tmp: pd.DataFrame = df.loc[df["steamid"] == playerSteamId]
+            self.addPlayer(playerSteamId, tmp.iloc[0, 2])
         
     
-    def addplayer(self, playerSteamId: int, playerName: str) -> None:
+    def addPlayer(self, playerSteamId: int, playerName: str) -> None:
         self.players[playerSteamId] = {
             "name": playerName,
             "cheatingCount": 0
@@ -31,6 +31,12 @@ class PlayerInformation:
         return self.players[playerSteamId]["name"]
 
     
+    def getAllPlayerData(self) -> list[dict]:
+        return [
+            self.getPlayerData[playerSteamId] for playerSteamId in self.players.keys()
+        ]
+
+
     def getPlayerData(self, playerSteamId: int) -> dict:
         assert (playerSteamId in self.players), "No data available for player"
 

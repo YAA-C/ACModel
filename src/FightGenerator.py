@@ -31,6 +31,6 @@ class FightGenerator:
         y = df["Y"]
         targetX = df["targetX"]
         targetY = df["targetY"]
-        isHurt = ~df["targetId"].isna()
+        isHurt = df["targetId"]
         data = [x for x in zip(x, y, targetX, targetY, isHurt)]
         return data

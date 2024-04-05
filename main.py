@@ -1,6 +1,5 @@
 import json
 import traceback
-import sys
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.spec import Basic, BasicProperties
@@ -40,15 +39,36 @@ class CharterWorker:
             channel.basic_reject(delivery_tag= method.delivery_tag, requeue= True)
 
 
+    def makeUploadJSON(self, match_id: int, allPlayersData: list, allFightsData: list) -> str:
+        data = [
+            {
+                "metadata": {
+                    "type": "FIGHT",
+                    "match_id": match_id
+                },
+                "data": allFightsData
+            },
+            {
+                "metadata": {
+                    "type": "MODEL_RESULT",
+                    "match_id": match_id
+                },
+                "data": allPlayersData
+            }
+        ]
+
+        return json.dumps(data)
+
+
     def handleData(self, channel: BlockingChannel, method: Basic.Deliver, body: bytes) -> None:
         log("Job Received.")
         try:
-            workObject: dict = json.loads(str(body, encoding= "utf-8"))
-            loadFile: LoadFile = LoadFile(workObject["url"])
-            matchId: str = str(workObject["match_id"])
-            filePath: str = loadFile.startLoading()
-            # matchId: str = "TEST"
-            # filePath: str = "./download/sample-notCheating.csv"
+            # workObject: dict = json.loads(str(body, encoding= "utf-8"))
+            # loadFile: LoadFile = LoadFile(workObject["url"])
+            # matchId: str = str(workObject["match_id"])
+            # filePath: str = loadFile.startLoading()
+            matchId: str = "TEST"
+            filePath: str = "./download/sample-notCheating.csv"
             log("Loaded file:", filePath)
 
             log("Fetching player information...")
@@ -90,11 +110,15 @@ class CharterWorker:
 
                 allFightsData.append(fightInformation)
             
+            allPlayersData: list[dict] = playerInformation.getAllPlayerData()
+            
+            uploadJSON: str = self.makeUploadJSON(matchId, allPlayersData, allFightsData)
+
             log("Finished Fight Analysis.")
             self.channel.basic_publish(
                 exchange= "upload_exchange", 
                 routing_key="to_uploader", 
-                body= json.dumps(allFightsData)
+                body= uploadJSON
             )
             log("Sent Data to RabbitMQ.")
         except Exception:
