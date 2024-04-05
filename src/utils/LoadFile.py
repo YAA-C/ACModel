@@ -28,5 +28,5 @@ class LoadFile:
         if totalSizeInBytes != 0 and progressBar.n != totalSizeInBytes:
             raise Exception("Error: Download incomplete.")
         
-        print("File downloaded successfully.")
+        print("File Loaded successfully.")
         return self.targetFile
