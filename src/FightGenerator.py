@@ -36,5 +36,14 @@ class FightGenerator:
         targetX = df["targetX"]
         targetY = df["targetY"]
         isHurt = df["isHurt"]
-        data = [x for x in zip(x, y, targetX, targetY, isHurt)]
+
+        data = []
+        for x in zip(x, y, targetX, targetY, isHurt):
+            data.append({
+                "playerX": x[0],
+                "playerY": x[1],
+                "targetX": x[2],
+                "targetY": x[3],
+                "isHurt": x[4]
+            })
         return data
