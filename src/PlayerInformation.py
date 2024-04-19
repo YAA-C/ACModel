@@ -58,5 +58,5 @@ class PlayerInformation:
         return {
             "steamid": playerSteamId,
             "playerName": self.players[playerSteamId]["name"],
-            "isCheating": (self.players[playerSteamId]["cheatingCount"] > 2)
+            "isCheating": (self.players[playerSteamId]["cheatingCount"] > 0)
         }
