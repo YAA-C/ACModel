@@ -2,6 +2,7 @@ import requests
 from tqdm import tqdm
 import os
 from urllib.parse import urlsplit
+from .Logger import log
 
 
 class LoadFile:
@@ -28,5 +29,5 @@ class LoadFile:
         if totalSizeInBytes != 0 and progressBar.n != totalSizeInBytes:
             raise Exception("Error: Download incomplete.")
         
-        print("File Loaded successfully.")
+        log("File Loaded successfully.")
         return self.targetFile
