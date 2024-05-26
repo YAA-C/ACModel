@@ -1,11 +1,13 @@
+import argparse
 import json
 import traceback
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
-from pika.spec import Basic, BasicProperties
+from pika.spec import Basic
 from src.utils.LoadFile import LoadFile
 from src.FightGenerator import FightGenerator
-from src.ACModel import model
+from src.ACModel import ACModel
+from src.ModelManager import modelManager, modelConfigurations
 from src.PlayerInformation import PlayerInformation
 from src.utils.Logger import log, logp, compileLogs
 
@@ -77,9 +79,12 @@ class CharterWorker:
             
             allFightsData: list = []
 
+            model: ACModel = modelManager.getModel()
+            
             log("Starting Fight Analysis...")
 
             fightGenerator: FightGenerator = FightGenerator(filePath)
+
             for fightDf in fightGenerator.getFights():
                 # get classification from model
                 modelLabel: bool = model.predict(fightDf)
@@ -112,8 +117,8 @@ class CharterWorker:
             allPlayersData: list[dict] = playerInformation.getAllPlayerData()
             
             uploadJSON: str = self.makeUploadJSON(matchId, allPlayersData, allFightsData)
-
-            log("Finished Fight Analysis.")    
+            
+            log("Finished Fight Analysis.")
             self.channel.basic_publish(
                 exchange= "upload_exchange", 
                 routing_key="to_uploader", 
@@ -140,10 +145,22 @@ class CharterWorker:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description='Example script with required parameter.')
+
+    parser.add_argument(
+        "model",
+        type=str,
+        choices= modelConfigurations.keys(), 
+        help= f"Model to use: {', '.join(modelConfigurations.keys())}"
+    )
+
+    args = parser.parse_args()
+    modelManager.setModel(args.model)
+
     try:
         log("Starting Worker...")
         charterWorker: CharterWorker = CharterWorker()
-    except Exception as e:
+    except Exception:
         log("Could not connect to RabbitMQ...")
         log(traceback.format_exc())
     else:

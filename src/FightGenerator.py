@@ -10,7 +10,7 @@ class FightGenerator:
     def getFights(self):
         indexes: list = [-1]
         indexes.extend(self.df[self.df.isnull().all(axis=1)].index.to_list())
-        
+
         for i in range(1, len(indexes)):
             prevRowIndex: int = int(indexes[i - 1] + 1)
             curRowIndex: int = int(indexes[i])
